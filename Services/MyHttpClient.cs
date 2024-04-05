@@ -8,7 +8,7 @@ namespace BlazorApp.Services
     public class MyHttpClient
     {
         private readonly HttpClient _httpClient;
-        private const string apiUrl = "http://ip172-18-0-104-co7cn8qim2rg00c0hfd0-32001.direct.labs.play-with-docker.com/gifstenor";
+        private const string apiUrl = "http://ip172-18-0-43-co7lo8a91nsg00e0gg8g-32001.direct.labs.play-with-docker.com/gifstenor";
 
         public MyHttpClient(HttpClient httpClient)
         {
