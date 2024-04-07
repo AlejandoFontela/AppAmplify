@@ -1,7 +1,8 @@
 ﻿@page "/"
-
+@using System;
 @using BlazorApp.Services
 @using System.Collections.Generic
+@using Newtonsoft.Json
 
 <PageTitle>Home</PageTitle>
 
@@ -9,34 +10,48 @@
 
 <p>Welcome to your new app.</p>
 
-@foreach (var gif in gifs)
+@if (filteredMediaItems != null)
 {
-    <img src="@gif.Media[0].Gif.Url" alt="Gif" />
+    @foreach (var media in filteredMediaItems)
+    {
+        <div>
+            <img src="@media.Preview" alt="Preview" />
+        </div>
+    }
+}
+else
+{
+    <p>Loading...</p>
 }
 
+
 @code {
-    private List<GifItem> gifs = new List<GifItem>();
+    private List<MediaItem> mediaItems;
+    private List<MediaItem> filteredMediaItems; // Nueva variable para almacenar los objetos filtrados
     private MyHttpClient myHttpClient;
 
     protected override async Task OnInitializedAsync()
     {
-        myHttpClient = new MyHttpClient(new HttpClient());
-        await GetDataFromApi();
+        var httpClient = new HttpClient();
+        myHttpClient = new MyHttpClient(httpClient);
+        mediaItems = await myHttpClient.GetMediaItemsAsync();
+
+        // Agrupar los objetos por el valor "hhgf" en la URL
+        var groupedMediaItems = mediaItems.GroupBy(item => GetHhgfValue(item.Url));
+
+        // Seleccionar solo un objeto de cada grupo
+        filteredMediaItems = groupedMediaItems.Select(group => group.First()).ToList();
+
+        var json = JsonConvert.SerializeObject(filteredMediaItems, Formatting.Indented);
+        Console.WriteLine(json);
     }
 
-    private async Task GetDataFromApi()
+    private string GetHhgfValue(string url)
     {
-        try
-        {
-            // Realizar la solicitud a la API y deserializar la respuesta
-            gifs = await myHttpClient.GetSomeDataAsync();
-
-            Console.WriteLine(gifs);
-        }
-        catch (Exception ex)
-        {
-            // Manejar cualquier error
-            Console.WriteLine($"Error: {ex.Message}");
-        }
+        // Obtiene el valor "hhgf" de la URL
+        var startIndex = url.LastIndexOf('/') + 1;
+        var endIndex = url.IndexOf('.', startIndex);
+        return url.Substring(startIndex, endIndex - startIndex);
     }
 }
+
